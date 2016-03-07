@@ -18,16 +18,16 @@ import logging
 from zope.interface import implements
 from twisted.python import components, failure
 from twisted.conch.ssh import session, forwarding, filetransfer
-from sshproxydocker.client import SFTPServerProxyClient
+from sftpproxydocker.client import SFTPServerProxyClient
 from twisted.internet.protocol import Protocol, ReconnectingClientFactory
 from twisted.conch.ls import lsLine
-from sshproxydocker.levfilelogger import LevelFileLogObserver
-from sshproxydocker.storageredis import StorageRedis
-from sshproxydocker.auth_backends import ActiveDirectoryBackend
+from sftpproxydocker.levfilelogger import LevelFileLogObserver
+from sftpproxydocker.storageredis import StorageRedis
+from sftpproxydocker.auth_backends import ActiveDirectoryBackend
 
-from sshproxydocker.tenant import Tenant,MOUNT_VOLUMES
-from sshproxydocker.user_tenant import UserTenant
-from sshproxydocker.container import SshdContainerUserTenant,DOCKER_HOST
+from sftpproxydocker.tenant import Tenant,MOUNT_VOLUMES
+from sftpproxydocker.user_tenant import UserTenant
+from sftpproxydocker.container import SshdContainerUserTenant,DOCKER_HOST
 from docker import Client
 import time
 

@@ -13,22 +13,22 @@ class StorageRedis(object):
                 redis_db,password=redis_password)
 
     def get_username(self,pubkey):
-        return self.redis_conn.get("sshproxydocker:pubkey:%s" % (pubkey))
+        return self.redis_conn.get("sftpproxydocker:pubkey:%s" % (pubkey))
 
     def get_userinfo(self,username):
-        return self.redis_conn.hgetall("sshproxydocker:user:%s" % (username))
+        return self.redis_conn.hgetall("sftpproxydocker:user:%s" % (username))
 
     def add_username(self,pubkey,username):
-        return self.redis_conn.set("sshproxydocker:pubkey:%s" % (pubkey), username) 
+        return self.redis_conn.set("sftpproxydocker:pubkey:%s" % (pubkey), username) 
 
     def add_userinfo(self,username,remote,port,user,home):
-        return self.redis_conn.hmset("sshproxydocker:user:%s" % (username),
+        return self.redis_conn.hmset("sftpproxydocker:user:%s" % (username),
                 {'remote':remote,'port':port,'user':user,'home':home})
 
     def del_username(self,pubkey):
-        return self.redis_conn.delete("sshproxydocker:pubkey:%s" % (pubkey))
+        return self.redis_conn.delete("sftpproxydocker:pubkey:%s" % (pubkey))
 
     def del_userinfo(self,username):
-        return self.redis_conn.delete("sshproxydocker:user:%s" % (username))
+        return self.redis_conn.delete("sftpproxydocker:user:%s" % (username))
 
 
