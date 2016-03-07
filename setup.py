@@ -9,24 +9,24 @@ def readme():
         return f.read()
 
 setup(
-    name='pysftpproxy',
+    name='sshproxydocker',
     version='1.0.0',
     description='An OpenSSH SFTP Proxy wrapper in Python.',
     long_description=readme(),
-    url='https://github.com/rauburtin/pysftpproxy',
+    url='https://github.com/rauburtin/sshproxydocker',
 
     author="rauburtin",
     author_email="rauburtin@gmail.com",
     license='MIT',
 
-    packages=['pysftpproxy'],
-    scripts=['bin/pysftpproxy'],
+    packages=['sshproxydocker'],
+    scripts=['bin/sshproxydocker'],
     test_suite='nose.collector',
     tests_require=['nose', 'twisted','pycrypto','pyasn1','redis'],
 
     install_requires=['twisted','pycrypto','pyasn1','redis','python-ldap','docker-py'],
 
-    keywords=["pysftpproxy", "sftp", "openssh", "ssh", "proxy"],
+    keywords=["sshproxydocker", "sftp", "openssh", "ssh", "proxy"],
     classifiers=[
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",

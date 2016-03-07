@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from pysftpproxy.storageredis import  StorageRedis
+from sshproxydocker.storageredis import  StorageRedis
 sredis = StorageRedis()
 
 pubkey=open("/home/rauburtin/.ssh/id_rsa.pub","r").read()
