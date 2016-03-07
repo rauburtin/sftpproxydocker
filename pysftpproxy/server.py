@@ -23,6 +23,13 @@ from twisted.internet.protocol import Protocol, ReconnectingClientFactory
 from twisted.conch.ls import lsLine
 from pysftpproxy.levfilelogger import LevelFileLogObserver
 from pysftpproxy.storageredis import StorageRedis
+from pysftpproxy.auth_backends import ActiveDirectoryBackend
+
+from pysftpproxy.tenant import Tenant,MOUNT_VOLUMES
+from pysftpproxy.user_tenant import UserTenant
+from pysftpproxy.container import SshdContainerUserTenant,DOCKER_HOST
+from docker import Client
+import time
 
 import sys
 
@@ -38,6 +45,26 @@ privateKey = open(privateKeyPath,"r").read()
 if privateKey.endswith("\n"):
     privateKey = privateKey[:-1]
 
+
+class ActiveDirectoryCredentialsChecker(object):
+    implements(checkers.ICredentialsChecker)
+    credentialInterfaces=[credentials.IUsernamePassword,]
+
+    def requestAvatarId(self,credentials):
+        try:
+            username=credentials.username
+            password=credentials.password
+
+            log.msg("Client username %s password %s " % (username,password), logLevel=logging.DEBUG)
+            auth =  ActiveDirectoryBackend()
+            user = auth.authenticate(username,password)
+            if not user is None:
+                return defer.succeed(username)
+            else:
+                return defer.fail(error.UnauthorizedLogin(
+                "invalid password or group for username: %s" % (username)))
+        except:
+            raise credError.UnauthorizedLogin,"Cannot bind/access LDAP"
 
 class PublicKeyCredentialsChecker:
     implements(checkers.ICredentialsChecker)
@@ -56,7 +83,7 @@ class PublicKeyCredentialsChecker:
         log.msg("username from redis",username, logLevel=logging.DEBUG)
 
         if username == credentials.username:
-	    return defer.succeed(credentials.username)
+            return defer.succeed(credentials.username)
         else:
             return defer.fail(error.UnauthorizedLogin(
                 "invalid pubkey for username: %s" % (credentials.username)))
@@ -74,14 +101,36 @@ class ProxySSHUser(avatar.ConchUser):
         #need to pass the remote ssh server ip and port
         log.msg("Start SFTPServerProxyClient", logLevel=logging.DEBUG)
         sredis = StorageRedis()
-        self.userinfo = sredis.get_userinfo(username)
+        userinfo = sredis.get_userinfo(username)
 
-        log.msg("userinfo from redis",self.userinfo, logLevel=logging.DEBUG)
+        log.msg("userinfo from redis",userinfo, logLevel=logging.DEBUG)
 
+
+        #START HACK
+        tenant1=Tenant("client1")
+        tenant2=Tenant("client2")
+        #tenant3=Tenant("client3")
+        sshd_container_user_tenant=SshdContainerUserTenant(username)
+        sshd_container_user_tenant.add_tenant(tenant1)
+        sshd_container_user_tenant.add_tenant(tenant2)
+        #sshd_container_user_tenant.add_tenant(tenant3)
+
+        print sshd_container_user_tenant.volumes,sshd_container_user_tenant.volumes_binds
+        sshd_container_user_tenant.start()
+        sshd_container_user_tenant.wait()
+
+        print 'logs',sshd_container_user_tenant.logs
+        print sshd_container_user_tenant.ports
+        ssh_port=sshd_container_user_tenant.exposed_port
         self.proxyclient = SFTPServerProxyClient(
-                remote=self.userinfo['remote'],
-                port=int(self.userinfo['port']),
-                user=self.userinfo['user'])
+                remote=DOCKER_HOST,
+                port=int(ssh_port))
+        #END HACK
+
+        #self.proxyclient = SFTPServerProxyClient(
+        #        remote=userinfo['remote'],
+        #        port=int(userinfo['port']))
+
 
     def getUserGroupId(self):
         userid = int(os.environ.get("SFTPPROXY_USERID",1000))
@@ -89,7 +138,7 @@ class ProxySSHUser(avatar.ConchUser):
         return userid,groupid
 
     def getHomeDir(self):
-        return self.userinfo.get('home', os.environ.get("SFTPPROXY_HOME",'/home/rauburtin'))
+        return os.environ.get("SFTPPROXY_HOME",'/home/rauburtin')
 
     def getOtherGroups(self):
         return self.otherGroups
@@ -140,7 +189,13 @@ class ProxySSHRealm:
 class ProxySFTPSession(SFTPServerForUnixConchUser):
 
     def gotVersion(self, otherVersion, extData):
-        return {}
+        if not hasattr(self.avatar.proxyclient, "client"):
+            return {}
+        else:
+            return {}
+            #log.msg("gitVersion otherVersion:%s extData:%s" % (otherVersion, extData), logLevel=logging.DEBUG)
+            #return self.avatar.proxyclient.client.gotVersion(otherVersion, extData)
+
 
     def openFile(self, filename, flags, attrs):
         log.msg("openFile filename:%s flags:%s attrs:%s" % (filename, flags, attrs), logLevel=logging.DEBUG)
@@ -281,6 +336,7 @@ class ProxySFTPServer(object):
 
         components.registerAdapter(ProxySFTPSession, ProxySSHUser, filetransfer.ISFTPServer)
         portal.registerChecker(PublicKeyCredentialsChecker())
+        portal.registerChecker(ActiveDirectoryCredentialsChecker())
         ProxySSHFactory.portal = portal
 
         reactor.listenTCP(int(os.environ.get("SFTPPROXY_PORT",5022)), ProxySSHFactory())

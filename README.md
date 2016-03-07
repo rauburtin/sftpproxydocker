@@ -6,6 +6,7 @@ An OpenSSH SFTP server wrapper written in python that acts as a proxy based on u
 * Installing redis on Ubuntu: 
 ```Shell
 sudo apt-get install redis-server
+sudo apt-get install libsasl2-dev libldap2-dev libssl-dev
 ```
 
 ##Features

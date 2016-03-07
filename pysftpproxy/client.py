@@ -8,17 +8,20 @@ import logging
 
 from twisted.internet import reactor
 from twisted.internet.defer import Deferred
+from twisted.internet import defer
 
 from twisted.conch.ssh.common import NS
 from twisted.conch.scripts.cftp import ClientOptions
 from twisted.conch.client.connect import connect
-from twisted.conch.client.default import SSHUserAuthClient, verifyHostKey
+#from twisted.conch.client.default import SSHUserAuthClient, verifyHostKey
+from twisted.conch.client.default import SSHUserAuthClient
 from twisted.conch.ssh.connection import SSHConnection
 from twisted.conch.ssh.channel import SSHChannel
 from twisted.conch.ssh.filetransfer import FXF_WRITE, FXF_CREAT, \
     FXF_TRUNC, FileTransferClient
 
-
+def verifyHostKey(transport, host, pubKey, fingerprint):
+    return defer.succeed(1)
 
 class SFTPSession(SSHChannel):
     name = 'session'
