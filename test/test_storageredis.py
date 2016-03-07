@@ -1,6 +1,6 @@
 import os
 import redis
-from pysftpproxy.storageredis import StorageRedis
+from sftpproxydocker.storageredis import StorageRedis
 import unittest
 
 class StorageRedisTest(unittest.TestCase):
@@ -20,19 +20,19 @@ class StorageRedisTest(unittest.TestCase):
                 '4LmrJH5QNRsFporcHDKOTwTTYLh5KmRpslkYHRivcJSkbh/C+BR3utDS555mV'] = 'rauburtin'
 
         for pubkey,username in self.pubkeys.iteritems():
-            self.redis_conn.set("pysftpproxy:pubkey:%s" % (pubkey),username)
+            self.redis_conn.set("sftpproxydocker:pubkey:%s" % (pubkey),username)
 
         self.userinfos={}
         self.userinfos['rauburtin']={'remote':'localhost','port':'22'}
 
         for username,userinfo in self.userinfos.iteritems():
-            self.redis_conn.hmset("pysftpproxy:user:%s" % (username),userinfo)
+            self.redis_conn.hmset("sftpproxydocker:user:%s" % (username),userinfo)
 
     def tearDown(self):
         for pubkey in self.pubkeys.keys():
-            self.redis_conn.delete("pysftpproxy:pubkey:%s" % (pubkey))
+            self.redis_conn.delete("sftpproxydocker:pubkey:%s" % (pubkey))
         for username in self.userinfos.keys():
-            self.redis_conn.delete("pysftpproxy:user:%s" % (username))
+            self.redis_conn.delete("sftpproxydocker:user:%s" % (username))
 
     def test_get1(self):
         sredis = StorageRedis()
