@@ -28,6 +28,7 @@ from sftpproxydocker.auth_backends import ActiveDirectoryBackend
 from sftpproxydocker.tenant import Tenant,MOUNT_VOLUMES
 from sftpproxydocker.user_tenant import UserTenant
 from sftpproxydocker.container import SshdContainerUserTenant,DOCKER_HOST
+from sftpproxydocker.storagemysql import StorageMySql
 from docker import Client
 import time
 
@@ -107,13 +108,18 @@ class ProxySSHUser(avatar.ConchUser):
 
 
         #START HACK
-        tenant1=Tenant("client1")
-        tenant2=Tenant("client2")
-        #tenant3=Tenant("client3")
+
+        storage_mysql = StorageMySql()
+        tenant_names =  storage_mysql.get_tenant_names(username)
+
+        tenants=[]
+        for tenant_name in tenant_names:
+            tenant=Tenant(tenant_name)
+            tenants.append(tenant)
+
         sshd_container_user_tenant=SshdContainerUserTenant(username)
-        sshd_container_user_tenant.add_tenant(tenant1)
-        sshd_container_user_tenant.add_tenant(tenant2)
-        #sshd_container_user_tenant.add_tenant(tenant3)
+        for tenant in tenants:
+            sshd_container_user_tenant.add_tenant(tenant)
 
         print sshd_container_user_tenant.volumes,sshd_container_user_tenant.volumes_binds
         sshd_container_user_tenant.start()

@@ -24,7 +24,7 @@ setup(
     test_suite='nose.collector',
     tests_require=['nose', 'twisted','pycrypto','pyasn1','redis'],
 
-    install_requires=['twisted','pycrypto','pyasn1','redis','python-ldap','docker-py'],
+    install_requires=['twisted','pycrypto','pyasn1','redis','python-ldap','docker-py','MySQL-python'],
 
     keywords=["sftpproxydocker", "sftp", "openssh", "ssh", "proxy"],
     classifiers=[
