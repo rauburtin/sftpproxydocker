@@ -11,12 +11,16 @@ class Config(object):
     @staticmethod
     def get_config_ini():
         config_path = None
-        for loc in (os.curdir, os.path.expanduser("~"),
-                "/etc/test-ldap",os.path.dirname(__file__),
-                os.environ.get("TEST-LDAP_CONF")):
-                config_path = os.path.join(loc,"config.ini")
-                if os.path.exists(config_path):
-                    return config_path
+        for loc in (os.environ.get("TEST-LDAP_CONF"),
+                "/etc/test-ldap",
+                os.path.join(os.path.expanduser("~"),".test-ldap"),
+                os.path.expanduser("~"),
+                os.curdir,
+                os.path.dirname(__file__)):
+                if loc:
+                    config_path = os.path.join(loc,"config.ini")
+                    if os.path.exists(config_path):
+                        return config_path
         return None
     
     @staticmethod
@@ -24,6 +28,10 @@ class Config(object):
         try: 
             config = ConfigParser.ConfigParser()
             config.read(Config.get_config_ini())
+
+            if config.has_section('mysql'):
+                for option in config.options('mysql'):
+                    setattr(Config,'mysql_'+option,config.get('mysql',option))
 
             if config.has_section('auth'):
                 for option in config.options('auth'):
