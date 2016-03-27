@@ -4,6 +4,7 @@
 import MySQLdb
 import time
 import unittest
+from config import Config
 
 
 class StorageMysqlException(Exception):
@@ -12,8 +13,10 @@ class StorageMysqlException(Exception):
 class StorageMySql(object):
     def __init__(self):
         #TODO, in properties
-        self.db = MySQLdb.connect("srv-umysqlm-02.moovapps.local",
-                    "user_config","Bit6H2KXm9ii","moovapps_config" )
+        self.db = MySQLdb.connect(Config.mysql_server,
+                    Config.mysql_username,
+                    Config.mysql_password,
+                    Config.mysql_database )
     def get_tenant_names(self,username):
         tenant_names=[]
         cursor = self.db.cursor()
