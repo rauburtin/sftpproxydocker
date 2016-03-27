@@ -281,12 +281,7 @@ class ProxySFTPSession(SFTPServerForUnixConchUser):
 
 
     def realPath(self, path):
-        if not hasattr(self.avatar.proxyclient, "client"):
-            return os.path.realpath(self._absPath(path))
-        else:
-            log.msg("realPath path:%s" % (path), logLevel=logging.DEBUG)
-            return self.avatar.proxyclient.client.realPath(path)
-
+        return os.path.realpath(self._absPath(path))
 
     def extendedRequest(self, extName, extData):
         raise NotImplementedError
